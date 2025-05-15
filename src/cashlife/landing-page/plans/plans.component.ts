@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {RouterLink} from "@angular/router";
-import {SidebarComponent} from "../../../../../lab3/CashLife/src/public/components/sidebar/sidebar.component";
+import {SidebarComponent} from "../../../public/components/sidebar/sidebar.component";
 
 @Component({
   selector: 'app-plans',

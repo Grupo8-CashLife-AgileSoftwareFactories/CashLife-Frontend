@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {NgForOf, ViewportScroller} from "@angular/common";
 import {Router, RouterLink} from '@angular/router';
-import {SidebarComponent} from "../../../../lab3/CashLife/src/public/components/sidebar/sidebar.component";
+import {SidebarComponent} from "../../public/components/sidebar/sidebar.component";
 @Component({
   selector: 'app-landing-page',
   standalone: true,
