@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HelpServiceComponent } from './help-service.component';
+import { RegisterDataComponent } from './register-data.component';
 
-describe('HelpServiceComponent', () => {
-  let component: HelpServiceComponent;
-  let fixture: ComponentFixture<HelpServiceComponent>;
+describe('RegisterDataComponent', () => {
+  let component: RegisterDataComponent;
+  let fixture: ComponentFixture<RegisterDataComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HelpServiceComponent]
+      imports: [RegisterDataComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(HelpServiceComponent);
+    fixture = TestBed.createComponent(RegisterDataComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
