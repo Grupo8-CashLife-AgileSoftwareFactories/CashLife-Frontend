@@ -18,7 +18,6 @@ import {FaqComponent} from "../cashlife/landing-page/faq/faq.component";
 import {HelpServiceComponent} from "../cashlife/landing-page/help-service/help-service.component";
 import {FeaturesComponent} from "../cashlife/landing-page/features/features.component";
 import {ContactsComponent} from "../cashlife/landing-page/contacts/contacts.component";
-import {ProfileDescriptionComponent} from '../cashlife/profile-description/profile-description.component';
 
 export const routes: Routes = [
   { path: 'landing', component: LandingPageComponent},
@@ -40,7 +39,6 @@ export const routes: Routes = [
   { path: 'app-recomendation', component: AppRecomendationComponent },
   { path: 'client-service', component: ClientServiceComponent },
   { path: 'suscription', component: PlanSubscriptionComponent },
-  { path: 'profile-description', component: ProfileDescriptionComponent},
 ];
 
 @NgModule({
