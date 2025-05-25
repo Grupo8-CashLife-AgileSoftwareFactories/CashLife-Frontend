@@ -38,7 +38,7 @@ export const routes: Routes = [
   { path: 'register-transaction', component: RegisterTransactionComponent },
   { path: 'app-recomendation', component: AppRecomendationComponent },
   { path: 'client-service', component: ClientServiceComponent },
-  { path: 'suscription', component: PlanSubscriptionComponent },
+  { path: 'suscription', component: PlanSubscriptionComponent }
 ];
 
 @NgModule({
