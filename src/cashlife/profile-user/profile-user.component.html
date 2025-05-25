@@ -1,0 +1,47 @@
+<app-toolbar></app-toolbar>
+<mat-card class="profile-card">
+  <mat-card-title>Mi perfil</mat-card-title>
+  <div class="profile-container">
+    <div class="photo-section">
+      <img src="../../../../CashLife-Frontend/src/assets/luis.jpg" alt="Perfil" class="profile-photo" />
+      <div class="level-indicator">
+        <span class="circle">1</span>
+        <mat-progress-bar
+          class="progress-bar"
+          mode="determinate"
+          value="50"
+        ></mat-progress-bar>
+        <span class="circle">2</span>
+      </div>
+      <p class="nivel">Nivel 2</p>
+    </div>
+
+    <div class="form-section">
+      <mat-form-field appearance="fill">
+
+        <input matInput placeholder="Nombre" [(ngModel)]="user.name" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+
+        <input matInput placeholder="Correo Electronico" [(ngModel)]="user.email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+
+        <input matInput type="number" [(ngModel)]="user.familyMembers" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+
+        <input matInput placeholder="Contraseña" type="password" [(ngModel)]="user.password" />
+      </mat-form-field>
+
+      <mat-card-actions class="btn-profile">
+        <button mat-raised-button color="primary" type="submit">Actualizar</button>
+        <button mat-raised-button color="primary" type="submit">Eliminar</button>
+      </mat-card-actions>
+
+    </div>
+  </div>
+</mat-card>
