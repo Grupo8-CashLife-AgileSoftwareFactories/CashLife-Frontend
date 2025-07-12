@@ -29,7 +29,7 @@ export const routes: Routes = [
   { path: 'contacts', component: ContactsComponent},
   { path: 'login', component: LoginComponent},
   { path: 'signup', component: SignupComponent},
-  { path: '',redirectTo: 'landing', pathMatch: 'full'},
+  { path: '',redirectTo: 'home', pathMatch: 'full'},
   { path: 'home', component: HomeComponent },
   { path: 'educacion-financiera', component: EducacionFinancieraComponent },
   { path: 'tasa-crediticia', component: TasaCrediticiaComponent },
