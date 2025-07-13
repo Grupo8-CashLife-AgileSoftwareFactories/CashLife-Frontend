@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('creating a new user', async ({ page }) => {
-  await page.goto('http://localhost:4200/landing');
+  await page.goto('https://cashlife-frontend-cicd.onrender.com');
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await page.getByRole('textbox', { name: 'Username' }).click();
   await page.getByRole('textbox', { name: 'Username' }).fill('david');
