@@ -119,6 +119,17 @@
             ],
             "scripts": []
           }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "CashLife:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "CashLife:serve:production"
+            }
+          }
         }
       }
     }
@@ -127,4 +138,3 @@
     "analytics": false
   }
 }
-
