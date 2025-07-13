@@ -1,0 +1,23 @@
+name: Test Release Trigger
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+jobs:
+  test-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test trigger
+        run: |
+          echo "🎉 Release branch trigger working!"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Time: $(date)"
+          
+      - name: Simple success
+        run: |
+          echo "✅ Workflow completed successfully"
