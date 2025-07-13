@@ -1,0 +1,155 @@
+name: Production Deploy
+
+on:
+  push:
+    branches: [release]
+  
+  workflow_dispatch:
+  
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-production-pr:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build for production
+        run: npm run build
+      
+      - name: Run production validation
+        run: |
+          echo "🧪 Running production validation..."
+          if [ -d "dist/cash-life/browser" ]; then
+            echo "✅ Production build successful"
+            ls -la dist/cash-life/browser/
+          else
+            echo "❌ Production build failed"
+            exit 1
+          fi
+      
+      - name: Check if PR already exists
+        id: check-pr
+        run: |
+          # Buscar PR existente de release a main
+          PR_NUMBER=$(gh pr list --base main --head release --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [ -n "$PR_NUMBER" ]; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "PR #$PR_NUMBER already exists"
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+            echo "No existing PR found"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Pull Request
+        if: steps.check-pr.outputs.pr_exists == 'false'
+        id: create-pr
+        run: |
+          # Verificar si main existe, si no, crear referencia
+          if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+            echo "Main branch doesn't exist, will be created from release"
+            COMMITS="Initial production deployment from release branch"
+          else
+            # Obtener commits desde el último merge a main
+            COMMITS=$(git log --oneline origin/main..origin/release --pretty=format:"%s" 2>/dev/null | head -5 | tr '\n' '; ' || echo "Latest changes from release branch")
+          fi
+          
+          TITLE="Deploy release to production"
+          BODY="Production deployment ready. Changes: $COMMITS. Build validated successfully."
+          
+          gh pr create \
+            --title "$TITLE" \
+            --body "$BODY" \
+            --base main \
+            --head release \
+            --label "deployment,production"
+          
+          PR_NUMBER=$(gh pr view release --json number --jq '.number')
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "✅ Created PR #$PR_NUMBER"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Update existing PR
+        if: steps.check-pr.outputs.pr_exists == 'true'
+        run: |
+          echo "Updating existing PR #${{ steps.check-pr.outputs.pr_number }}"
+          BODY="Production deployment updated. Latest build validated successfully at $(date)."
+          gh pr edit ${{ steps.check-pr.outputs.pr_number }} \
+            --add-label "updated" \
+            --body "$BODY"
+          echo "✅ PR updated successfully"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: PR Summary
+        run: |
+          if [ "${{ steps.check-pr.outputs.pr_exists }}" = "true" ]; then
+            echo "Updated existing PR #${{ steps.check-pr.outputs.pr_number }}"
+            echo "https://github.com/${{ github.repository }}/pull/${{ steps.check-pr.outputs.pr_number }}"
+          else
+            echo "Created new PR #${{ steps.create-pr.outputs.pr_number }}"
+            echo "https://github.com/${{ github.repository }}/pull/${{ steps.create-pr.outputs.pr_number }}"
+          fi
+          echo "Please review and merge to deploy to production!"
+
+  deploy-to-production:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Trigger Render Deploy
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_HOOK" ]; then
+            echo "Triggering Render deployment..."
+            curl -X POST "$RENDER_HOOK" \
+              -H "Content-Type: application/json" \
+              -d '{"branch": "main", "commit": "${{ github.event.pull_request.merge_commit_sha }}", "message": "Production deploy via PR merge"}'
+            echo "✅ Render deployment triggered!"
+          else
+            echo "Using Render auto-deploy (no webhook configured)"
+            echo "Render will detect the main branch update automatically"
+          fi
+      
+      - name: Deployment Summary
+        run: |
+          echo "Production Deployment Initiated!"
+          echo "PR #${{ github.event.pull_request.number }} merged to main"
+          echo "Merge commit: ${{ github.event.pull_request.merge_commit_sha }}"
+          echo "Render deployment in progress..."
+          echo "Deploy initiated at: $(date)"

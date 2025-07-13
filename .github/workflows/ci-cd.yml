@@ -1,0 +1,80 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: write
+
+jobs:
+  ci-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Verify build artifacts
+        run: |
+          if [ -d "dist/cash-life/browser" ]; then
+            echo "✅ Build successful - artifacts found"
+            ls -la dist/cash-life/browser/
+          else
+            echo "❌ Build failed - no artifacts found"
+            exit 1
+          fi
+      
+      - name: Fetch all branches
+        run: git fetch --all
+      
+      - name: Create or update release branch
+        run: |
+          echo "Preparing release branch..."
+          if git show-ref --verify --quiet refs/remotes/origin/release; then
+            echo "✅ Release branch exists, checking out..."
+            git checkout -b release origin/release
+          else
+            echo "Creating new release branch..."
+            git checkout -b release
+          fi
+      
+      - name: Merge develop into release
+        run: |
+          echo "Merging develop into release..."
+          DEVELOP_SHA=$(git rev-parse origin/develop)
+          echo "Develop commit to merge: $DEVELOP_SHA"
+          
+          if git diff --quiet HEAD origin/develop; then
+            echo "No changes to merge"
+          else
+            echo "Merging changes..."
+            git merge origin/develop --no-ff -m "Deploy: Merge develop to release after successful CI"
+            echo "✅ Merge completed!"
+          fi
+      
+      - name: Push to release
+        run: |
+          echo "Pushing to release..."
+          git push origin release
+          echo "✅ Successfully deployed to release!"
+          echo "Release updated: $(git rev-parse HEAD)"

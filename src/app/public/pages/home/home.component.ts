@@ -16,7 +16,7 @@ import {ToolbarComponent} from "../../../../shared/components/toolbar/toolbar.co
 })
 export class HomeComponent {
   constructor(private router: Router) {}
-  userName: string = 'Dante';
+  userName: string = '';
   navigateTo(path: string) {
     this.router.navigate([path]);
   }
