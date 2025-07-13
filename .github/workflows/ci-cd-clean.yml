@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   install:
-    name: 🧰 Instalar dependencias
+    name: Instalar dependencias
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
   test-e2e:
-    name: 🧪 Pruebas E2E
+    name: Pruebas E2E
     runs-on: ubuntu-latest
     needs: install
     steps:
@@ -55,7 +55,7 @@ jobs:
           retention-days: 10
 
   build:
-    name: 🏗️ Build del proyecto
+    name: Build del proyecto
     runs-on: ubuntu-latest
     needs: test-e2e
     steps:
@@ -82,7 +82,7 @@ jobs:
           fi
 
   deploy:
-    name: 🚀 Deploy a release
+    name: Deploy a release
     runs-on: ubuntu-latest
     needs: build
     steps:
