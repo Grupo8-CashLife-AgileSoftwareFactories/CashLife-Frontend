@@ -1,0 +1,51 @@
+name: CI/CD - Develop to Release
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Validate build
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Build successful"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+      
+      - name: Deploy to release
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git fetch origin release:release || git checkout -b release
+          git checkout release
+          git merge origin/develop --no-ff -m "Deploy: Merge develop to release after successful CI"
+          git push origin release
+          
+          echo "✅ Successfully deployed to release branch"
