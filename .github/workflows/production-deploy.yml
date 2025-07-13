@@ -130,8 +130,7 @@ jobs:
             --title "$TITLE" \
             --body "$BODY" \
             --base main \
-            --head release \
-            --label "deployment,production,automated" || {
+            --head release || {
               echo "❌ Failed to create PR"
               echo "Repository info:"
               gh repo view
@@ -155,9 +154,15 @@ jobs:
         if: steps.check-pr.outputs.pr_exists == 'true'
         run: |
           echo "Updating existing PR #${{ steps.check-pr.outputs.pr_number }}"
-          BODY="Production deployment updated. Latest build validated successfully at $(date)."
+          BODY="## Production deployment updated
+          
+          **Status:** ✅ Latest build validated successfully
+          **Updated:** $(date)
+          **Commit:** ${{ github.sha }}
+          
+          This PR is ready for production deployment."
+          
           gh pr edit ${{ steps.check-pr.outputs.pr_number }} \
-            --add-label "updated" \
             --body "$BODY"
           echo "✅ PR updated successfully"
         env:
