@@ -12,6 +12,7 @@ import {MatButton} from "@angular/material/button";
 import {ToolbarComponent} from "../../../../shared/components/toolbar/toolbar.component";
 import {MatOption, MatSelect} from "@angular/material/select";
 
+// commit de prueba
 @Component({
   selector: 'app-signup',
   standalone: true,
