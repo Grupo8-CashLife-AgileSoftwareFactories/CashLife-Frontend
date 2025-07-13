@@ -1,0 +1,40 @@
+name: Auto Deploy to Render
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-to-render:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Deploy notification
+        run: |
+          echo "🚀 Production deployment initiated!"
+          echo "PR #${{ github.event.pull_request.number }} merged to main"
+          echo "Merge commit: ${{ github.event.pull_request.merge_commit_sha }}"
+          
+      - name: Trigger Render Deploy
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_HOOK" ]; then
+            echo "Triggering Render deployment..."
+            curl -X POST "$RENDER_HOOK" \
+              -H "Content-Type: application/json" \
+              -d '{"branch": "main", "commit": "${{ github.event.pull_request.merge_commit_sha }}", "message": "Production deploy via PR merge"}'
+            echo "✅ Render deployment triggered!"
+          else
+            echo "Using Render auto-deploy (no webhook configured)"
+            echo "Render will detect the main branch update automatically"
+          fi
+          
+      - name: Deployment summary
+        run: |
+          echo "🎉 Production deployment completed!"
+          echo "Your app should be live in a few minutes at your Render URL"
