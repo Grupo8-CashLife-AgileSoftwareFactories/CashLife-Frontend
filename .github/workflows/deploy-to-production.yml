@@ -1,0 +1,86 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm production deployment'
+        required: true
+        default: 'no'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-production-pr:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v4
+        with:
+          ref: release
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Production build
+        run: npm run build
+      
+      - name: Validate build
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Production build successful"
+            ls -la dist/
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+      
+      - name: Create or update PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if PR exists
+          PR_NUMBER=$(gh pr list --base main --head release --json number -q '.[0].number' 2>/dev/null || echo "")
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Updating existing PR #$PR_NUMBER"
+            gh pr edit $PR_NUMBER --body "🚀 **Production deployment ready**
+
+✅ Build validated successfully
+📅 Updated: $(date)
+🔍 Commit: ${{ github.sha }}
+
+Ready to merge for production deployment to Render!"
+            echo "✅ PR #$PR_NUMBER updated"
+            echo "PR URL: https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
+          else
+            echo "Creating new PR"
+            gh pr create \
+              --title "🚀 Deploy to Production" \
+              --body "🚀 **Production deployment ready**
+
+✅ Build validated successfully
+📅 Created: $(date)
+🔍 Commit: ${{ github.sha }}
+
+Ready to merge for production deployment to Render!" \
+              --base main \
+              --head release
+            echo "✅ New PR created"
+          fi
+      
+      - name: Summary
+        run: |
+          echo "🚀 Production PR ready!"
+          echo "Next step: Review and merge the PR to deploy to Render"
