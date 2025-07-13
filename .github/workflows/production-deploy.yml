@@ -44,7 +44,7 @@ jobs:
       
       - name: Run production validation
         run: |
-          echo "🧪 Running production validation..."
+          echo "Running production validation..."
           if [ -d "dist/cash-life/browser" ]; then
             echo "✅ Production build successful"
             ls -la dist/cash-life/browser/
